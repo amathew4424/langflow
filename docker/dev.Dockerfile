@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+FROM harbor.int.taqniat.ae/astral-sh/uv:python3.12-bookworm-slim
 ENV TZ=UTC
 
 WORKDIR /app
@@ -6,10 +6,13 @@ WORKDIR /app
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y \
-    build-essential \
-    curl \
-    npm \
-    git \
+        build-essential \
+        curl \
+        git \
+        libpq-dev \
+    # Install Node.js 22 from NodeSource
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
