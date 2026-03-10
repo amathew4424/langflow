@@ -56828,6 +56828,413 @@
       }
     ],
     [
+      "custom_llm",
+      {
+        "CustomLLM": {
+          "base_classes": [
+            "LanguageModel",
+            "Message"
+          ],
+          "beta": false,
+          "conditional_paths": [],
+          "custom_fields": {},
+          "description": "Connect to any OpenAI-compatible language model API by providing a base URL, API key, and model name.",
+          "display_name": "Custom LLM",
+          "documentation": "",
+          "edited": false,
+          "field_order": [
+            "input_value",
+            "system_message",
+            "stream",
+            "base_url",
+            "api_key",
+            "model_name",
+            "temperature",
+            "max_tokens",
+            "max_retries",
+            "timeout",
+            "json_mode",
+            "model_kwargs",
+            "seed"
+          ],
+          "frozen": false,
+          "icon": "bot",
+          "legacy": false,
+          "metadata": {
+            "code_hash": "6e29102f5fcc",
+            "dependencies": {
+              "dependencies": [
+                {
+                  "name": "pydantic",
+                  "version": "2.12.5"
+                },
+                {
+                  "name": "lfx",
+                  "version": null
+                },
+                {
+                  "name": "langchain_openai",
+                  "version": "0.3.23"
+                },
+                {
+                  "name": "openai",
+                  "version": "1.82.1"
+                }
+              ],
+              "total_dependencies": 4
+            },
+            "keywords": [
+              "model",
+              "llm",
+              "language model",
+              "large language model"
+            ],
+            "module": "lfx.components.custom_llm.custom_llm.CustomLLMComponent"
+          },
+          "minimized": false,
+          "output_types": [],
+          "outputs": [
+            {
+              "allows_loop": false,
+              "cache": true,
+              "display_name": "Model Response",
+              "group_outputs": false,
+              "method": "text_response",
+              "name": "text_output",
+              "selected": "Message",
+              "tool_mode": true,
+              "types": [
+                "Message"
+              ],
+              "value": "__UNDEFINED__"
+            },
+            {
+              "allows_loop": false,
+              "cache": true,
+              "display_name": "Language Model",
+              "group_outputs": false,
+              "method": "build_model",
+              "name": "model_output",
+              "selected": "LanguageModel",
+              "tool_mode": true,
+              "types": [
+                "LanguageModel"
+              ],
+              "value": "__UNDEFINED__"
+            }
+          ],
+          "pinned": false,
+          "template": {
+            "_type": "Component",
+            "api_key": {
+              "_input_type": "SecretStrInput",
+              "advanced": false,
+              "display_name": "API Key",
+              "dynamic": false,
+              "info": "The API key for authentication.",
+              "input_types": [],
+              "load_from_db": true,
+              "name": "api_key",
+              "override_skip": false,
+              "password": true,
+              "placeholder": "",
+              "required": true,
+              "show": true,
+              "title_case": false,
+              "track_in_telemetry": false,
+              "type": "str",
+              "value": ""
+            },
+            "base_url": {
+              "_input_type": "StrInput",
+              "advanced": false,
+              "display_name": "Base URL",
+              "dynamic": false,
+              "info": "The base URL of the API (e.g. https://api.openai.com/v1).",
+              "list": false,
+              "list_add_label": "Add More",
+              "load_from_db": false,
+              "name": "base_url",
+              "override_skip": false,
+              "placeholder": "",
+              "required": true,
+              "show": true,
+              "title_case": false,
+              "tool_mode": false,
+              "trace_as_metadata": true,
+              "track_in_telemetry": false,
+              "type": "str",
+              "value": ""
+            },
+            "code": {
+              "advanced": true,
+              "dynamic": true,
+              "fileTypes": [],
+              "file_path": "",
+              "info": "",
+              "list": false,
+              "load_from_db": false,
+              "multiline": true,
+              "name": "code",
+              "password": false,
+              "placeholder": "",
+              "required": true,
+              "show": true,
+              "title_case": false,
+              "type": "code",
+              "value": "from pydantic.v1 import SecretStr\n\nfrom lfx.base.models.model import LCModelComponent\nfrom lfx.field_typing import LanguageModel\nfrom lfx.field_typing.range_spec import RangeSpec\nfrom lfx.inputs.inputs import BoolInput, DictInput, IntInput, SecretStrInput, SliderInput, StrInput\n\n\nclass CustomLLMComponent(LCModelComponent):\n    display_name = \"Custom LLM\"\n    description = \"Connect to any OpenAI-compatible language model API by providing a base URL, API key, and model name.\"\n    icon = \"bot\"\n    name = \"CustomLLM\"\n\n    inputs = [\n        *LCModelComponent.get_base_inputs(),\n        StrInput(\n            name=\"base_url\",\n            display_name=\"Base URL\",\n            info=\"The base URL of the API (e.g. https://api.openai.com/v1).\",\n            required=True,\n        ),\n        SecretStrInput(\n            name=\"api_key\",\n            display_name=\"API Key\",\n            info=\"The API key for authentication.\",\n            required=True,\n        ),\n        StrInput(\n            name=\"model_name\",\n            display_name=\"Model Name\",\n            info=\"The name of the model to use (e.g. gpt-4o, llama-3-70b).\",\n            required=True,\n        ),\n        SliderInput(\n            name=\"temperature\",\n            display_name=\"Temperature\",\n            value=0.1,\n            range_spec=RangeSpec(min=0, max=1, step=0.01),\n            advanced=True,\n        ),\n        IntInput(\n            name=\"max_tokens\",\n            display_name=\"Max Tokens\",\n            info=\"The maximum number of tokens to generate.\",\n            advanced=True,\n        ),\n        IntInput(\n            name=\"max_retries\",\n            display_name=\"Max Retries\",\n            value=5,\n            advanced=True,\n        ),\n        IntInput(\n            name=\"timeout\",\n            display_name=\"Timeout\",\n            value=700,\n            advanced=True,\n        ),\n        BoolInput(\n            name=\"json_mode\",\n            display_name=\"JSON Mode\",\n            info=\"If True, the model will output JSON.\",\n            advanced=True,\n        ),\n        DictInput(\n            name=\"model_kwargs\",\n            display_name=\"Model Kwargs\",\n            info=\"Additional keyword arguments to pass to the model.\",\n            advanced=True,\n        ),\n        IntInput(\n            name=\"seed\",\n            display_name=\"Seed\",\n            info=\"The seed controls the reproducibility of the job.\",\n            advanced=True,\n        ),\n    ]\n\n    def build_model(self) -> LanguageModel:  # type: ignore[type-var]\n        from langchain_openai import ChatOpenAI\n\n        api_key_value = None\n        if self.api_key:\n            if isinstance(self.api_key, SecretStr):\n                api_key_value = self.api_key.get_secret_value()\n            else:\n                api_key_value = str(self.api_key)\n\n        model_kwargs = self.model_kwargs or {}\n        if \"api_key\" in model_kwargs:\n            model_kwargs = dict(model_kwargs)\n            del model_kwargs[\"api_key\"]\n\n        parameters = {\n            \"api_key\": api_key_value,\n            \"model\": self.model_name,\n            \"base_url\": self.base_url,\n            \"temperature\": self.temperature if self.temperature is not None else 0.1,\n            \"max_tokens\": self.max_tokens or None,\n            \"model_kwargs\": model_kwargs,\n            \"max_retries\": self.max_retries,\n            \"timeout\": self.timeout,\n        }\n\n        if self.seed:\n            parameters[\"seed\"] = self.seed\n\n        output = ChatOpenAI(**parameters)\n        if self.json_mode:\n            output = output.bind(response_format={\"type\": \"json_object\"})\n\n        return output\n\n    def _get_exception_message(self, e: Exception):\n        try:\n            from openai import BadRequestError\n        except ImportError:\n            return None\n        if isinstance(e, BadRequestError):\n            message = e.body.get(\"message\")\n            if message:\n                return message\n        return None\n"
+            },
+            "input_value": {
+              "_input_type": "MessageInput",
+              "advanced": false,
+              "display_name": "Input",
+              "dynamic": false,
+              "info": "",
+              "input_types": [
+                "Message"
+              ],
+              "list": false,
+              "list_add_label": "Add More",
+              "load_from_db": false,
+              "name": "input_value",
+              "override_skip": false,
+              "placeholder": "",
+              "required": false,
+              "show": true,
+              "title_case": false,
+              "tool_mode": false,
+              "trace_as_input": true,
+              "trace_as_metadata": true,
+              "track_in_telemetry": false,
+              "type": "str",
+              "value": ""
+            },
+            "json_mode": {
+              "_input_type": "BoolInput",
+              "advanced": true,
+              "display_name": "JSON Mode",
+              "dynamic": false,
+              "info": "If True, the model will output JSON.",
+              "list": false,
+              "list_add_label": "Add More",
+              "name": "json_mode",
+              "override_skip": false,
+              "placeholder": "",
+              "required": false,
+              "show": true,
+              "title_case": false,
+              "tool_mode": false,
+              "trace_as_metadata": true,
+              "track_in_telemetry": true,
+              "type": "bool",
+              "value": false
+            },
+            "max_retries": {
+              "_input_type": "IntInput",
+              "advanced": true,
+              "display_name": "Max Retries",
+              "dynamic": false,
+              "info": "",
+              "list": false,
+              "list_add_label": "Add More",
+              "name": "max_retries",
+              "override_skip": false,
+              "placeholder": "",
+              "required": false,
+              "show": true,
+              "title_case": false,
+              "tool_mode": false,
+              "trace_as_metadata": true,
+              "track_in_telemetry": true,
+              "type": "int",
+              "value": 5
+            },
+            "max_tokens": {
+              "_input_type": "IntInput",
+              "advanced": true,
+              "display_name": "Max Tokens",
+              "dynamic": false,
+              "info": "The maximum number of tokens to generate.",
+              "list": false,
+              "list_add_label": "Add More",
+              "name": "max_tokens",
+              "override_skip": false,
+              "placeholder": "",
+              "required": false,
+              "show": true,
+              "title_case": false,
+              "tool_mode": false,
+              "trace_as_metadata": true,
+              "track_in_telemetry": true,
+              "type": "int",
+              "value": 0
+            },
+            "model_kwargs": {
+              "_input_type": "DictInput",
+              "advanced": true,
+              "display_name": "Model Kwargs",
+              "dynamic": false,
+              "info": "Additional keyword arguments to pass to the model.",
+              "list": false,
+              "list_add_label": "Add More",
+              "name": "model_kwargs",
+              "override_skip": false,
+              "placeholder": "",
+              "required": false,
+              "show": true,
+              "title_case": false,
+              "tool_mode": false,
+              "trace_as_input": true,
+              "track_in_telemetry": false,
+              "type": "dict",
+              "value": {}
+            },
+            "model_name": {
+              "_input_type": "StrInput",
+              "advanced": false,
+              "display_name": "Model Name",
+              "dynamic": false,
+              "info": "The name of the model to use (e.g. gpt-4o, llama-3-70b).",
+              "list": false,
+              "list_add_label": "Add More",
+              "load_from_db": false,
+              "name": "model_name",
+              "override_skip": false,
+              "placeholder": "",
+              "required": true,
+              "show": true,
+              "title_case": false,
+              "tool_mode": false,
+              "trace_as_metadata": true,
+              "track_in_telemetry": false,
+              "type": "str",
+              "value": ""
+            },
+            "seed": {
+              "_input_type": "IntInput",
+              "advanced": true,
+              "display_name": "Seed",
+              "dynamic": false,
+              "info": "The seed controls the reproducibility of the job.",
+              "list": false,
+              "list_add_label": "Add More",
+              "name": "seed",
+              "override_skip": false,
+              "placeholder": "",
+              "required": false,
+              "show": true,
+              "title_case": false,
+              "tool_mode": false,
+              "trace_as_metadata": true,
+              "track_in_telemetry": true,
+              "type": "int",
+              "value": 0
+            },
+            "stream": {
+              "_input_type": "BoolInput",
+              "advanced": true,
+              "display_name": "Stream",
+              "dynamic": false,
+              "info": "Stream the response from the model. Streaming works only in Chat.",
+              "list": false,
+              "list_add_label": "Add More",
+              "name": "stream",
+              "override_skip": false,
+              "placeholder": "",
+              "required": false,
+              "show": true,
+              "title_case": false,
+              "tool_mode": false,
+              "trace_as_metadata": true,
+              "track_in_telemetry": true,
+              "type": "bool",
+              "value": false
+            },
+            "system_message": {
+              "_input_type": "MultilineInput",
+              "advanced": false,
+              "ai_enabled": false,
+              "copy_field": false,
+              "display_name": "System Message",
+              "dynamic": false,
+              "info": "System message to pass to the model.",
+              "input_types": [
+                "Message"
+              ],
+              "list": false,
+              "list_add_label": "Add More",
+              "load_from_db": false,
+              "multiline": true,
+              "name": "system_message",
+              "override_skip": false,
+              "password": false,
+              "placeholder": "",
+              "required": false,
+              "show": true,
+              "title_case": false,
+              "tool_mode": false,
+              "trace_as_input": true,
+              "trace_as_metadata": true,
+              "track_in_telemetry": false,
+              "type": "str",
+              "value": ""
+            },
+            "temperature": {
+              "_input_type": "SliderInput",
+              "advanced": true,
+              "display_name": "Temperature",
+              "dynamic": false,
+              "info": "",
+              "max_label": "",
+              "max_label_icon": "",
+              "min_label": "",
+              "min_label_icon": "",
+              "name": "temperature",
+              "override_skip": false,
+              "placeholder": "",
+              "range_spec": {
+                "max": 1.0,
+                "min": 0.0,
+                "step": 0.01,
+                "step_type": "float"
+              },
+              "required": false,
+              "show": true,
+              "slider_buttons": false,
+              "slider_buttons_options": [],
+              "slider_input": false,
+              "title_case": false,
+              "tool_mode": false,
+              "track_in_telemetry": false,
+              "type": "slider",
+              "value": 0.1
+            },
+            "timeout": {
+              "_input_type": "IntInput",
+              "advanced": true,
+              "display_name": "Timeout",
+              "dynamic": false,
+              "info": "",
+              "list": false,
+              "list_add_label": "Add More",
+              "name": "timeout",
+              "override_skip": false,
+              "placeholder": "",
+              "required": false,
+              "show": true,
+              "title_case": false,
+              "tool_mode": false,
+              "trace_as_metadata": true,
+              "track_in_telemetry": true,
+              "type": "int",
+              "value": 700
+            }
+          },
+          "tool_mode": false
+        }
+      }
+    ],
+    [
       "data_source",
       {
         "APIRequest": {
@@ -73374,7 +73781,7 @@
               "dependencies": [
                 {
                   "name": "google",
-                  "version": "2.30.0"
+                  "version": "1.72.0"
                 },
                 {
                   "name": "lfx",
@@ -73522,7 +73929,7 @@
               "dependencies": [
                 {
                   "name": "google",
-                  "version": "2.30.0"
+                  "version": "1.72.0"
                 },
                 {
                   "name": "googleapiclient",
@@ -73683,7 +74090,7 @@
               "dependencies": [
                 {
                   "name": "google",
-                  "version": "2.30.0"
+                  "version": "1.72.0"
                 },
                 {
                   "name": "langchain_core",
@@ -73812,7 +74219,7 @@
               "dependencies": [
                 {
                   "name": "google",
-                  "version": "2.30.0"
+                  "version": "1.72.0"
                 },
                 {
                   "name": "langchain_google_community",
@@ -73941,7 +74348,7 @@
               "dependencies": [
                 {
                   "name": "google",
-                  "version": "2.30.0"
+                  "version": "1.72.0"
                 },
                 {
                   "name": "googleapiclient",
@@ -74231,7 +74638,7 @@
                 },
                 {
                   "name": "google",
-                  "version": "2.30.0"
+                  "version": "1.72.0"
                 },
                 {
                   "name": "langchain_google_genai",
@@ -74591,7 +74998,7 @@
               "dependencies": [
                 {
                   "name": "google",
-                  "version": "2.30.0"
+                  "version": "1.72.0"
                 },
                 {
                   "name": "google_auth_oauthlib",
@@ -95917,7 +96324,7 @@
                 },
                 {
                   "name": "gassist",
-                  "version": null
+                  "version": "0.0.1"
                 }
               ],
               "total_dependencies": 2
@@ -100533,453 +100940,6 @@
           },
           "tool_mode": false
         },
-        "DataOperations": {
-          "base_classes": [
-            "Data"
-          ],
-          "beta": false,
-          "conditional_paths": [],
-          "custom_fields": {},
-          "description": "Perform various operations on a Data object.",
-          "display_name": "Data Operations",
-          "documentation": "",
-          "edited": false,
-          "field_order": [
-            "data",
-            "operations",
-            "select_keys_input",
-            "filter_key",
-            "operator",
-            "filter_values",
-            "append_update_data",
-            "remove_keys_input",
-            "rename_keys_input",
-            "mapped_json_display",
-            "selected_key",
-            "query"
-          ],
-          "frozen": false,
-          "icon": "file-json",
-          "legacy": false,
-          "metadata": {
-            "code_hash": "1e5bfda1706b",
-            "dependencies": {
-              "dependencies": [
-                {
-                  "name": "jq",
-                  "version": "1.11.0"
-                },
-                {
-                  "name": "json_repair",
-                  "version": "0.30.3"
-                },
-                {
-                  "name": "lfx",
-                  "version": null
-                }
-              ],
-              "total_dependencies": 3
-            },
-            "keywords": [
-              "data",
-              "operations",
-              "filter values",
-              "Append or Update",
-              "remove keys",
-              "rename keys",
-              "select keys",
-              "literal eval",
-              "combine",
-              "filter",
-              "append",
-              "update",
-              "remove",
-              "rename",
-              "data operations",
-              "data manipulation",
-              "data transformation",
-              "data filtering",
-              "data selection",
-              "data combination",
-              "Parse JSON",
-              "JSON Query",
-              "JQ Query"
-            ],
-            "module": "lfx.components.processing.data_operations.DataOperationsComponent"
-          },
-          "minimized": false,
-          "output_types": [],
-          "outputs": [
-            {
-              "allows_loop": false,
-              "cache": true,
-              "display_name": "Data",
-              "group_outputs": false,
-              "method": "as_data",
-              "name": "data_output",
-              "selected": "Data",
-              "tool_mode": true,
-              "types": [
-                "Data"
-              ],
-              "value": "__UNDEFINED__"
-            }
-          ],
-          "pinned": false,
-          "template": {
-            "_type": "Component",
-            "append_update_data": {
-              "_input_type": "DictInput",
-              "advanced": false,
-              "display_name": "Append or Update",
-              "dynamic": false,
-              "info": "Data to append or update the existing data with. Only top-level keys are checked.",
-              "list": true,
-              "list_add_label": "Add More",
-              "name": "append_update_data",
-              "override_skip": false,
-              "placeholder": "",
-              "required": false,
-              "show": false,
-              "title_case": false,
-              "tool_mode": false,
-              "trace_as_input": true,
-              "track_in_telemetry": false,
-              "type": "dict",
-              "value": {
-                "key": "value"
-              }
-            },
-            "code": {
-              "advanced": true,
-              "dynamic": true,
-              "fileTypes": [],
-              "file_path": "",
-              "info": "",
-              "list": false,
-              "load_from_db": false,
-              "multiline": true,
-              "name": "code",
-              "password": false,
-              "placeholder": "",
-              "required": true,
-              "show": true,
-              "title_case": false,
-              "type": "code",
-              "value": "import ast\nimport json\nfrom typing import TYPE_CHECKING, Any\n\nimport jq\nfrom json_repair import repair_json\n\nfrom lfx.custom import Component\nfrom lfx.inputs import DictInput, DropdownInput, MessageTextInput, SortableListInput\nfrom lfx.io import DataInput, MultilineInput, Output\nfrom lfx.log.logger import logger\nfrom lfx.schema import Data\nfrom lfx.schema.dotdict import dotdict\nfrom lfx.utils.component_utils import set_current_fields, set_field_display\n\nif TYPE_CHECKING:\n    from collections.abc import Callable\n\nACTION_CONFIG = {\n    \"Select Keys\": {\"is_list\": False, \"log_msg\": \"setting filter fields\"},\n    \"Literal Eval\": {\"is_list\": False, \"log_msg\": \"setting evaluate fields\"},\n    \"Combine\": {\"is_list\": True, \"log_msg\": \"setting combine fields\"},\n    \"Filter Values\": {\"is_list\": False, \"log_msg\": \"setting filter values fields\"},\n    \"Append or Update\": {\"is_list\": False, \"log_msg\": \"setting Append or Update fields\"},\n    \"Remove Keys\": {\"is_list\": False, \"log_msg\": \"setting remove keys fields\"},\n    \"Rename Keys\": {\"is_list\": False, \"log_msg\": \"setting rename keys fields\"},\n    \"Path Selection\": {\"is_list\": False, \"log_msg\": \"setting mapped key extractor fields\"},\n    \"JQ Expression\": {\"is_list\": False, \"log_msg\": \"setting parse json fields\"},\n}\nOPERATORS = {\n    \"equals\": lambda a, b: str(a) == str(b),\n    \"not equals\": lambda a, b: str(a) != str(b),\n    \"contains\": lambda a, b: str(b) in str(a),\n    \"starts with\": lambda a, b: str(a).startswith(str(b)),\n    \"ends with\": lambda a, b: str(a).endswith(str(b)),\n}\n\n\nclass DataOperationsComponent(Component):\n    display_name = \"Data Operations\"\n    description = \"Perform various operations on a Data object.\"\n    icon = \"file-json\"\n    name = \"DataOperations\"\n    default_keys = [\"operations\", \"data\"]\n    metadata = {\n        \"keywords\": [\n            \"data\",\n            \"operations\",\n            \"filter values\",\n            \"Append or Update\",\n            \"remove keys\",\n            \"rename keys\",\n            \"select keys\",\n            \"literal eval\",\n            \"combine\",\n            \"filter\",\n            \"append\",\n            \"update\",\n            \"remove\",\n            \"rename\",\n            \"data operations\",\n            \"data manipulation\",\n            \"data transformation\",\n            \"data filtering\",\n            \"data selection\",\n            \"data combination\",\n            \"Parse JSON\",\n            \"JSON Query\",\n            \"JQ Query\",\n        ],\n    }\n    actions_data = {\n        \"Select Keys\": [\"select_keys_input\", \"operations\"],\n        \"Literal Eval\": [],\n        \"Combine\": [],\n        \"Filter Values\": [\"filter_values\", \"operations\", \"operator\", \"filter_key\"],\n        \"Append or Update\": [\"append_update_data\", \"operations\"],\n        \"Remove Keys\": [\"remove_keys_input\", \"operations\"],\n        \"Rename Keys\": [\"rename_keys_input\", \"operations\"],\n        \"Path Selection\": [\"mapped_json_display\", \"selected_key\", \"operations\"],\n        \"JQ Expression\": [\"query\", \"operations\"],\n    }\n\n    # All operation-specific input fields (used to hide and reset when no operation selected).\n    ALL_OPERATION_FIELDS = [\n        \"select_keys_input\",\n        \"filter_key\",\n        \"operator\",\n        \"filter_values\",\n        \"append_update_data\",\n        \"remove_keys_input\",\n        \"rename_keys_input\",\n        \"mapped_json_display\",\n        \"selected_key\",\n        \"query\",\n    ]\n\n    @staticmethod\n    def extract_all_paths(obj, path=\"\"):\n        paths = []\n        if isinstance(obj, dict):\n            for k, v in obj.items():\n                new_path = f\"{path}.{k}\" if path else f\".{k}\"\n                paths.append(new_path)\n                paths.extend(DataOperationsComponent.extract_all_paths(v, new_path))\n        elif isinstance(obj, list) and obj:\n            new_path = f\"{path}[0]\"\n            paths.append(new_path)\n            paths.extend(DataOperationsComponent.extract_all_paths(obj[0], new_path))\n        return paths\n\n    @staticmethod\n    def remove_keys_recursive(obj, keys_to_remove):\n        if isinstance(obj, dict):\n            return {\n                k: DataOperationsComponent.remove_keys_recursive(v, keys_to_remove)\n                for k, v in obj.items()\n                if k not in keys_to_remove\n            }\n        if isinstance(obj, list):\n            return [DataOperationsComponent.remove_keys_recursive(item, keys_to_remove) for item in obj]\n        return obj\n\n    @staticmethod\n    def rename_keys_recursive(obj, rename_map):\n        if isinstance(obj, dict):\n            return {\n                rename_map.get(k, k): DataOperationsComponent.rename_keys_recursive(v, rename_map)\n                for k, v in obj.items()\n            }\n        if isinstance(obj, list):\n            return [DataOperationsComponent.rename_keys_recursive(item, rename_map) for item in obj]\n        return obj\n\n    inputs = [\n        DataInput(name=\"data\", display_name=\"Data\", info=\"Data object to filter.\", required=True, is_list=True),\n        SortableListInput(\n            name=\"operations\",\n            display_name=\"Operations\",\n            placeholder=\"Select Operation\",\n            info=\"List of operations to perform on the data.\",\n            options=[\n                {\"name\": \"Select Keys\", \"icon\": \"lasso-select\"},\n                {\"name\": \"Literal Eval\", \"icon\": \"braces\"},\n                {\"name\": \"Combine\", \"icon\": \"merge\"},\n                {\"name\": \"Filter Values\", \"icon\": \"filter\"},\n                {\"name\": \"Append or Update\", \"icon\": \"circle-plus\"},\n                {\"name\": \"Remove Keys\", \"icon\": \"eraser\"},\n                {\"name\": \"Rename Keys\", \"icon\": \"pencil-line\"},\n                {\"name\": \"Path Selection\", \"icon\": \"mouse-pointer\"},\n                {\"name\": \"JQ Expression\", \"icon\": \"terminal\"},\n            ],\n            real_time_refresh=True,\n            limit=1,\n        ),\n        # select keys inputs\n        MessageTextInput(\n            name=\"select_keys_input\",\n            display_name=\"Select Keys\",\n            info=\"List of keys to select from the data. Only top-level keys can be selected.\",\n            show=False,\n            is_list=True,\n            value=[],\n        ),\n        # filter values inputs\n        MessageTextInput(\n            name=\"filter_key\",\n            display_name=\"Filter Key\",\n            info=(\n                \"Name of the key containing the list to filter. \"\n                \"It must be a top-level key in the JSON and its value must be a list.\"\n            ),\n            is_list=True,\n            show=False,\n            value=[],\n        ),\n        DropdownInput(\n            name=\"operator\",\n            display_name=\"Comparison Operator\",\n            options=[\"equals\", \"not equals\", \"contains\", \"starts with\", \"ends with\"],\n            info=\"The operator to apply for comparing the values.\",\n            value=\"equals\",\n            advanced=False,\n            show=False,\n        ),\n        DictInput(\n            name=\"filter_values\",\n            display_name=\"Filter Values\",\n            info=\"List of values to filter by.\",\n            show=False,\n            is_list=True,\n            value={},\n        ),\n        # update/ Append data inputs\n        DictInput(\n            name=\"append_update_data\",\n            display_name=\"Append or Update\",\n            info=\"Data to append or update the existing data with. Only top-level keys are checked.\",\n            show=False,\n            value={\"key\": \"value\"},\n            is_list=True,\n        ),\n        # remove keys inputs\n        MessageTextInput(\n            name=\"remove_keys_input\",\n            display_name=\"Remove Keys\",\n            info=\"List of keys to remove from the data.\",\n            show=False,\n            is_list=True,\n            value=[],\n        ),\n        # rename keys inputs\n        DictInput(\n            name=\"rename_keys_input\",\n            display_name=\"Rename Keys\",\n            info=\"List of keys to rename in the data.\",\n            show=False,\n            is_list=True,\n            value={\"old_key\": \"new_key\"},\n        ),\n        MultilineInput(\n            name=\"mapped_json_display\",\n            display_name=\"JSON to Map\",\n            info=\"Paste or preview your JSON here to explore its structure and select a path for extraction.\",\n            required=False,\n            refresh_button=True,\n            real_time_refresh=True,\n            placeholder=\"Add a JSON example.\",\n            show=False,\n        ),\n        DropdownInput(\n            name=\"selected_key\",\n            display_name=\"Select Path\",\n            options=[],\n            required=False,\n            dynamic=True,\n            show=False,\n            value=None,\n        ),\n        MessageTextInput(\n            name=\"query\",\n            display_name=\"JQ Expression\",\n            info=\"JSON Query to filter the data. Used by Parse JSON operation.\",\n            placeholder=\"e.g., .properties.id\",\n            show=False,\n        ),\n    ]\n\n    # Default values for operation fields when clearing (match input definitions)\n    OPERATION_FIELD_DEFAULTS: dict[str, Any] = {\n        \"select_keys_input\": [],\n        \"filter_key\": [],\n        \"operator\": \"equals\",\n        \"filter_values\": {},\n        \"append_update_data\": {\"key\": \"value\"},\n        \"remove_keys_input\": [],\n        \"rename_keys_input\": {\"old_key\": \"new_key\"},\n        \"mapped_json_display\": \"\",\n        \"selected_key\": None,\n        \"query\": \"\",\n    }\n\n    outputs = [\n        Output(display_name=\"Data\", name=\"data_output\", method=\"as_data\"),\n    ]\n\n    # Helper methods for data operations\n    def get_data_dict(self) -> dict:\n        \"\"\"Extract data dictionary from Data object.\"\"\"\n        data = self.data[0] if isinstance(self.data, list) and len(self.data) == 1 else self.data\n        return data.model_dump()\n\n    def json_query(self) -> Data:\n        import json\n\n        import jq\n\n        if not self.query or not self.query.strip():\n            msg = \"JSON Query is required and cannot be blank.\"\n            raise ValueError(msg)\n        raw_data = self.get_data_dict()\n        try:\n            input_str = json.dumps(raw_data)\n            repaired = repair_json(input_str)\n            data_json = json.loads(repaired)\n            jq_input = data_json[\"data\"] if isinstance(data_json, dict) and \"data\" in data_json else data_json\n            results = jq.compile(self.query).input(jq_input).all()\n            if not results:\n                msg = \"No result from JSON query.\"\n                raise ValueError(msg)\n            result = results[0] if len(results) == 1 else results\n            if result is None or result == \"None\":\n                msg = \"JSON query returned null/None. Check if the path exists in your data.\"\n                raise ValueError(msg)\n            if isinstance(result, dict):\n                return Data(data=result)\n            return Data(data={\"result\": result})\n        except (ValueError, TypeError, KeyError, json.JSONDecodeError) as e:\n            logger.error(f\"JSON Query failed: {e}\")\n            msg = f\"JSON Query error: {e}\"\n            raise ValueError(msg) from e\n\n    def get_normalized_data(self) -> dict:\n        \"\"\"Get normalized data dictionary, handling the 'data' key if present.\"\"\"\n        data_dict = self.get_data_dict()\n        return data_dict.get(\"data\", data_dict)\n\n    def data_is_list(self) -> bool:\n        \"\"\"Check if data contains multiple items.\"\"\"\n        return isinstance(self.data, list) and len(self.data) > 1\n\n    def validate_single_data(self, operation: str) -> None:\n        \"\"\"Validate that the operation is being performed on a single data object.\"\"\"\n        if self.data_is_list():\n            msg = f\"{operation} operation is not supported for multiple data objects.\"\n            raise ValueError(msg)\n\n    def operation_exception(self, operations: list[str]) -> None:\n        \"\"\"Raise exception for incompatible operations.\"\"\"\n        msg = f\"{operations} operations are not supported in combination with each other.\"\n        raise ValueError(msg)\n\n    # Data transformation operations\n    def select_keys(self, *, evaluate: bool | None = None) -> Data:\n        \"\"\"Select specific keys from the data dictionary.\"\"\"\n        self.validate_single_data(\"Select Keys\")\n        data_dict = self.get_normalized_data()\n        filter_criteria: list[str] = self.select_keys_input\n\n        # Filter the data\n        if len(filter_criteria) == 1 and filter_criteria[0] == \"data\":\n            filtered = data_dict[\"data\"]\n        else:\n            if not all(key in data_dict for key in filter_criteria):\n                msg = f\"Select key not found in data. Available keys: {list(data_dict.keys())}\"\n                raise ValueError(msg)\n            filtered = {key: value for key, value in data_dict.items() if key in filter_criteria}\n\n        # Create a new Data object with the filtered data\n        if evaluate:\n            filtered = self.recursive_eval(filtered)\n\n        # Return a new Data object with the filtered data directly in the data attribute\n        return Data(data=filtered)\n\n    def remove_keys(self) -> Data:\n        \"\"\"Remove specified keys from the data dictionary, recursively.\"\"\"\n        self.validate_single_data(\"Remove Keys\")\n        data_dict = self.get_normalized_data()\n        remove_keys_input: list[str] = self.remove_keys_input\n\n        filtered = DataOperationsComponent.remove_keys_recursive(data_dict, set(remove_keys_input))\n        return Data(data=filtered)\n\n    def rename_keys(self) -> Data:\n        \"\"\"Rename keys in the data dictionary, recursively.\"\"\"\n        self.validate_single_data(\"Rename Keys\")\n        data_dict = self.get_normalized_data()\n        rename_keys_input: dict[str, str] = self.rename_keys_input\n\n        renamed = DataOperationsComponent.rename_keys_recursive(data_dict, rename_keys_input)\n        return Data(data=renamed)\n\n    def recursive_eval(self, data: Any) -> Any:\n        \"\"\"Recursively evaluate string values in a dictionary or list.\n\n        If the value is a string that can be evaluated, it will be evaluated.\n        Otherwise, the original value is returned.\n        \"\"\"\n        if isinstance(data, dict):\n            return {k: self.recursive_eval(v) for k, v in data.items()}\n        if isinstance(data, list):\n            return [self.recursive_eval(item) for item in data]\n        if isinstance(data, str):\n            try:\n                # Only attempt to evaluate strings that look like Python literals\n                if (\n                    data.strip().startswith((\"{\", \"[\", \"(\", \"'\", '\"'))\n                    or data.strip().lower() in (\"true\", \"false\", \"none\")\n                    or data.strip().replace(\".\", \"\").isdigit()\n                ):\n                    return ast.literal_eval(data)\n                # return data\n            except (ValueError, SyntaxError, TypeError, MemoryError):\n                # If evaluation fails for any reason, return the original string\n                return data\n            else:\n                return data\n        return data\n\n    def evaluate_data(self) -> Data:\n        \"\"\"Evaluate string values in the data dictionary.\"\"\"\n        self.validate_single_data(\"Literal Eval\")\n        logger.info(\"evaluating data\")\n        return Data(**self.recursive_eval(self.get_data_dict()))\n\n    def combine_data(self, *, evaluate: bool | None = None) -> Data:\n        \"\"\"Combine multiple data objects into one.\"\"\"\n        logger.info(\"combining data\")\n        if not self.data_is_list():\n            return self.data[0] if self.data else Data(data={})\n\n        if len(self.data) == 1:\n            msg = \"Combine operation requires multiple data inputs.\"\n            raise ValueError(msg)\n\n        data_dicts = [data.model_dump().get(\"data\", data.model_dump()) for data in self.data]\n        combined_data = {}\n\n        for data_dict in data_dicts:\n            for key, value in data_dict.items():\n                if key not in combined_data:\n                    combined_data[key] = value\n                elif isinstance(combined_data[key], list):\n                    if isinstance(value, list):\n                        combined_data[key].extend(value)\n                    else:\n                        combined_data[key].append(value)\n                else:\n                    # If current value is not a list, convert it to list and add new value\n                    combined_data[key] = (\n                        [combined_data[key], value] if not isinstance(value, list) else [combined_data[key], *value]\n                    )\n\n        if evaluate:\n            combined_data = self.recursive_eval(combined_data)\n\n        return Data(**combined_data)\n\n    def filter_data(self, input_data: list[dict[str, Any]], filter_key: str, filter_value: str, operator: str) -> list:\n        \"\"\"Filter list data based on key, value, and operator.\"\"\"\n        # Validate inputs\n        if not input_data:\n            self.status = \"Input data is empty.\"\n            return []\n\n        if not filter_key or not filter_value:\n            self.status = \"Filter key or value is missing.\"\n            return input_data\n\n        # Filter the data\n        filtered_data = []\n        for item in input_data:\n            if isinstance(item, dict) and filter_key in item:\n                if self.compare_values(item[filter_key], filter_value, operator):\n                    filtered_data.append(item)\n            else:\n                self.status = f\"Warning: Some items don't have the key '{filter_key}' or are not dictionaries.\"\n\n        return filtered_data\n\n    def compare_values(self, item_value: Any, filter_value: str, operator: str) -> bool:\n        comparison_func = OPERATORS.get(operator)\n        if comparison_func:\n            return comparison_func(item_value, filter_value)\n        return False\n\n    def multi_filter_data(self) -> Data:\n        \"\"\"Apply multiple filters to the data.\"\"\"\n        self.validate_single_data(\"Filter Values\")\n        data_filtered = self.get_normalized_data()\n\n        for filter_key in self.filter_key:\n            if filter_key not in data_filtered:\n                msg = f\"Filter key '{filter_key}' not found in data. Available keys: {list(data_filtered.keys())}\"\n                raise ValueError(msg)\n\n            if isinstance(data_filtered[filter_key], list):\n                for filter_data in self.filter_values:\n                    filter_value = self.filter_values.get(filter_data)\n                    if filter_value is not None:\n                        data_filtered[filter_key] = self.filter_data(\n                            input_data=data_filtered[filter_key],\n                            filter_key=filter_data,\n                            filter_value=filter_value,\n                            operator=self.operator,\n                        )\n            else:\n                msg = f\"Filter key '{filter_key}' is not a list.\"\n                raise TypeError(msg)\n\n        return Data(**data_filtered)\n\n    def append_update(self) -> Data:\n        \"\"\"Append or Update with new key-value pairs.\"\"\"\n        self.validate_single_data(\"Append or Update\")\n        data_filtered = self.get_normalized_data()\n\n        for key, value in self.append_update_data.items():\n            data_filtered[key] = value\n\n        return Data(**data_filtered)\n\n    # Configuration and execution methods\n    def update_build_config(self, build_config: dotdict, field_value: Any, field_name: str | None = None) -> dotdict:\n        if field_name == \"operations\":\n            build_config[\"operations\"][\"value\"] = field_value\n            # Mirror Text Operations: first hide all operation-specific fields and clear their values\n            for field in self.ALL_OPERATION_FIELDS:\n                if field in build_config:\n                    build_config[field][\"show\"] = False\n                    if field in self.OPERATION_FIELD_DEFAULTS:\n                        build_config[field][\"value\"] = self.OPERATION_FIELD_DEFAULTS[field]\n\n            selected_actions = [\n                action[\"name\"] for action in (field_value or []) if isinstance(action, dict) and \"name\" in action\n            ]\n            if len(selected_actions) == 1 and selected_actions[0] in ACTION_CONFIG:\n                action = selected_actions[0]\n                config = ACTION_CONFIG[action]\n                build_config[\"data\"][\"is_list\"] = config[\"is_list\"]\n                logger.info(config[\"log_msg\"])\n                return set_current_fields(\n                    build_config=build_config,\n                    action_fields=self.actions_data,\n                    selected_action=action,\n                    default_fields=[\"operations\", \"data\"],\n                    func=set_field_display,\n                )\n            return build_config\n\n        if field_name == \"mapped_json_display\":\n            try:\n                parsed_json = json.loads(field_value)\n                keys = DataOperationsComponent.extract_all_paths(parsed_json)\n                build_config[\"selected_key\"][\"options\"] = keys\n                build_config[\"selected_key\"][\"show\"] = True\n            except (json.JSONDecodeError, TypeError, ValueError) as e:\n                logger.error(f\"Error parsing mapped JSON: {e}\")\n                build_config[\"selected_key\"][\"show\"] = False\n\n        return build_config\n\n    def json_path(self) -> Data:\n        try:\n            if not self.data or not self.selected_key:\n                msg = \"Missing input data or selected key.\"\n                raise ValueError(msg)\n            input_payload = self.data[0].data if isinstance(self.data, list) else self.data.data\n            compiled = jq.compile(self.selected_key)\n            result = compiled.input(input_payload).first()\n            if isinstance(result, dict):\n                return Data(data=result)\n            return Data(data={\"result\": result})\n        except (ValueError, TypeError, KeyError) as e:\n            self.status = f\"Error: {e!s}\"\n            self.log(self.status)\n            return Data(data={\"error\": str(e)})\n\n    def as_data(self) -> Data:\n        if not hasattr(self, \"operations\") or not self.operations:\n            return Data(data={})\n\n        selected_actions = [action[\"name\"] for action in self.operations]\n        logger.info(f\"selected_actions: {selected_actions}\")\n        if len(selected_actions) != 1:\n            return Data(data={})\n\n        action_map: dict[str, Callable[[], Data]] = {\n            \"Select Keys\": self.select_keys,\n            \"Literal Eval\": self.evaluate_data,\n            \"Combine\": self.combine_data,\n            \"Filter Values\": self.multi_filter_data,\n            \"Append or Update\": self.append_update,\n            \"Remove Keys\": self.remove_keys,\n            \"Rename Keys\": self.rename_keys,\n            \"Path Selection\": self.json_path,\n            \"JQ Expression\": self.json_query,\n        }\n        handler: Callable[[], Data] | None = action_map.get(selected_actions[0])\n        if handler:\n            try:\n                return handler()\n            except Exception as e:\n                logger.error(f\"Error executing {selected_actions[0]}: {e!s}\")\n                raise\n        return Data(data={})\n"
-            },
-            "data": {
-              "_input_type": "DataInput",
-              "advanced": false,
-              "display_name": "Data",
-              "dynamic": false,
-              "info": "Data object to filter.",
-              "input_types": [
-                "Data"
-              ],
-              "list": true,
-              "list_add_label": "Add More",
-              "name": "data",
-              "override_skip": false,
-              "placeholder": "",
-              "required": true,
-              "show": true,
-              "title_case": false,
-              "tool_mode": false,
-              "trace_as_input": true,
-              "trace_as_metadata": true,
-              "track_in_telemetry": false,
-              "type": "other",
-              "value": ""
-            },
-            "filter_key": {
-              "_input_type": "MessageTextInput",
-              "advanced": false,
-              "display_name": "Filter Key",
-              "dynamic": false,
-              "info": "Name of the key containing the list to filter. It must be a top-level key in the JSON and its value must be a list.",
-              "input_types": [
-                "Message"
-              ],
-              "list": true,
-              "list_add_label": "Add More",
-              "load_from_db": false,
-              "name": "filter_key",
-              "override_skip": false,
-              "placeholder": "",
-              "required": false,
-              "show": false,
-              "title_case": false,
-              "tool_mode": false,
-              "trace_as_input": true,
-              "trace_as_metadata": true,
-              "track_in_telemetry": false,
-              "type": "str",
-              "value": []
-            },
-            "filter_values": {
-              "_input_type": "DictInput",
-              "advanced": false,
-              "display_name": "Filter Values",
-              "dynamic": false,
-              "info": "List of values to filter by.",
-              "list": true,
-              "list_add_label": "Add More",
-              "name": "filter_values",
-              "override_skip": false,
-              "placeholder": "",
-              "required": false,
-              "show": false,
-              "title_case": false,
-              "tool_mode": false,
-              "trace_as_input": true,
-              "track_in_telemetry": false,
-              "type": "dict",
-              "value": {}
-            },
-            "mapped_json_display": {
-              "_input_type": "MultilineInput",
-              "advanced": false,
-              "ai_enabled": false,
-              "copy_field": false,
-              "display_name": "JSON to Map",
-              "dynamic": false,
-              "info": "Paste or preview your JSON here to explore its structure and select a path for extraction.",
-              "input_types": [
-                "Message"
-              ],
-              "list": false,
-              "list_add_label": "Add More",
-              "load_from_db": false,
-              "multiline": true,
-              "name": "mapped_json_display",
-              "override_skip": false,
-              "password": false,
-              "placeholder": "Add a JSON example.",
-              "real_time_refresh": true,
-              "refresh_button": true,
-              "required": false,
-              "show": false,
-              "title_case": false,
-              "tool_mode": false,
-              "trace_as_input": true,
-              "trace_as_metadata": true,
-              "track_in_telemetry": false,
-              "type": "str",
-              "value": ""
-            },
-            "operations": {
-              "_input_type": "SortableListInput",
-              "advanced": false,
-              "display_name": "Operations",
-              "dynamic": false,
-              "info": "List of operations to perform on the data.",
-              "limit": 1,
-              "name": "operations",
-              "options": [
-                {
-                  "icon": "lasso-select",
-                  "name": "Select Keys"
-                },
-                {
-                  "icon": "braces",
-                  "name": "Literal Eval"
-                },
-                {
-                  "icon": "merge",
-                  "name": "Combine"
-                },
-                {
-                  "icon": "filter",
-                  "name": "Filter Values"
-                },
-                {
-                  "icon": "circle-plus",
-                  "name": "Append or Update"
-                },
-                {
-                  "icon": "eraser",
-                  "name": "Remove Keys"
-                },
-                {
-                  "icon": "pencil-line",
-                  "name": "Rename Keys"
-                },
-                {
-                  "icon": "mouse-pointer",
-                  "name": "Path Selection"
-                },
-                {
-                  "icon": "terminal",
-                  "name": "JQ Expression"
-                }
-              ],
-              "override_skip": false,
-              "placeholder": "Select Operation",
-              "real_time_refresh": true,
-              "required": false,
-              "search_category": [],
-              "show": true,
-              "title_case": false,
-              "tool_mode": false,
-              "trace_as_metadata": true,
-              "track_in_telemetry": false,
-              "type": "sortableList",
-              "value": ""
-            },
-            "operator": {
-              "_input_type": "DropdownInput",
-              "advanced": false,
-              "combobox": false,
-              "dialog_inputs": {},
-              "display_name": "Comparison Operator",
-              "dynamic": false,
-              "external_options": {},
-              "info": "The operator to apply for comparing the values.",
-              "name": "operator",
-              "options": [
-                "equals",
-                "not equals",
-                "contains",
-                "starts with",
-                "ends with"
-              ],
-              "options_metadata": [],
-              "override_skip": false,
-              "placeholder": "",
-              "required": false,
-              "show": false,
-              "title_case": false,
-              "toggle": false,
-              "tool_mode": false,
-              "trace_as_metadata": true,
-              "track_in_telemetry": true,
-              "type": "str",
-              "value": "equals"
-            },
-            "query": {
-              "_input_type": "MessageTextInput",
-              "advanced": false,
-              "display_name": "JQ Expression",
-              "dynamic": false,
-              "info": "JSON Query to filter the data. Used by Parse JSON operation.",
-              "input_types": [
-                "Message"
-              ],
-              "list": false,
-              "list_add_label": "Add More",
-              "load_from_db": false,
-              "name": "query",
-              "override_skip": false,
-              "placeholder": "e.g., .properties.id",
-              "required": false,
-              "show": false,
-              "title_case": false,
-              "tool_mode": false,
-              "trace_as_input": true,
-              "trace_as_metadata": true,
-              "track_in_telemetry": false,
-              "type": "str",
-              "value": ""
-            },
-            "remove_keys_input": {
-              "_input_type": "MessageTextInput",
-              "advanced": false,
-              "display_name": "Remove Keys",
-              "dynamic": false,
-              "info": "List of keys to remove from the data.",
-              "input_types": [
-                "Message"
-              ],
-              "list": true,
-              "list_add_label": "Add More",
-              "load_from_db": false,
-              "name": "remove_keys_input",
-              "override_skip": false,
-              "placeholder": "",
-              "required": false,
-              "show": false,
-              "title_case": false,
-              "tool_mode": false,
-              "trace_as_input": true,
-              "trace_as_metadata": true,
-              "track_in_telemetry": false,
-              "type": "str",
-              "value": []
-            },
-            "rename_keys_input": {
-              "_input_type": "DictInput",
-              "advanced": false,
-              "display_name": "Rename Keys",
-              "dynamic": false,
-              "info": "List of keys to rename in the data.",
-              "list": true,
-              "list_add_label": "Add More",
-              "name": "rename_keys_input",
-              "override_skip": false,
-              "placeholder": "",
-              "required": false,
-              "show": false,
-              "title_case": false,
-              "tool_mode": false,
-              "trace_as_input": true,
-              "track_in_telemetry": false,
-              "type": "dict",
-              "value": {
-                "old_key": "new_key"
-              }
-            },
-            "select_keys_input": {
-              "_input_type": "MessageTextInput",
-              "advanced": false,
-              "display_name": "Select Keys",
-              "dynamic": false,
-              "info": "List of keys to select from the data. Only top-level keys can be selected.",
-              "input_types": [
-                "Message"
-              ],
-              "list": true,
-              "list_add_label": "Add More",
-              "load_from_db": false,
-              "name": "select_keys_input",
-              "override_skip": false,
-              "placeholder": "",
-              "required": false,
-              "show": false,
-              "title_case": false,
-              "tool_mode": false,
-              "trace_as_input": true,
-              "trace_as_metadata": true,
-              "track_in_telemetry": false,
-              "type": "str",
-              "value": []
-            },
-            "selected_key": {
-              "_input_type": "DropdownInput",
-              "advanced": false,
-              "combobox": false,
-              "dialog_inputs": {},
-              "display_name": "Select Path",
-              "dynamic": true,
-              "external_options": {},
-              "info": "",
-              "name": "selected_key",
-              "options": [],
-              "options_metadata": [],
-              "override_skip": false,
-              "placeholder": "",
-              "required": false,
-              "show": false,
-              "title_case": false,
-              "toggle": false,
-              "tool_mode": false,
-              "trace_as_metadata": true,
-              "track_in_telemetry": true,
-              "type": "str"
-            }
-          },
-          "tool_mode": false
-        },
         "DataToDataFrame": {
           "base_classes": [
             "DataFrame"
@@ -102495,138 +102455,6 @@
               "track_in_telemetry": false,
               "type": "str",
               "value": "{text}"
-            }
-          },
-          "tool_mode": false
-        },
-        "ParseJSONData": {
-          "base_classes": [
-            "Data"
-          ],
-          "beta": false,
-          "conditional_paths": [],
-          "custom_fields": {},
-          "description": "Convert and extract JSON fields.",
-          "display_name": "Parse JSON",
-          "documentation": "",
-          "edited": false,
-          "field_order": [
-            "input_value",
-            "query"
-          ],
-          "frozen": false,
-          "icon": "braces",
-          "legacy": true,
-          "metadata": {
-            "code_hash": "5268ca4c42d6",
-            "dependencies": {
-              "dependencies": [
-                {
-                  "name": "jq",
-                  "version": "1.11.0"
-                },
-                {
-                  "name": "json_repair",
-                  "version": "0.30.3"
-                },
-                {
-                  "name": "lfx",
-                  "version": null
-                }
-              ],
-              "total_dependencies": 3
-            },
-            "module": "lfx.components.processing.parse_json_data.ParseJSONDataComponent"
-          },
-          "minimized": false,
-          "output_types": [],
-          "outputs": [
-            {
-              "allows_loop": false,
-              "cache": true,
-              "display_name": "Filtered Data",
-              "group_outputs": false,
-              "method": "filter_data",
-              "name": "filtered_data",
-              "selected": "Data",
-              "tool_mode": true,
-              "types": [
-                "Data"
-              ],
-              "value": "__UNDEFINED__"
-            }
-          ],
-          "pinned": false,
-          "replacement": [
-            "processing.ParserComponent"
-          ],
-          "template": {
-            "_type": "Component",
-            "code": {
-              "advanced": true,
-              "dynamic": true,
-              "fileTypes": [],
-              "file_path": "",
-              "info": "",
-              "list": false,
-              "load_from_db": false,
-              "multiline": true,
-              "name": "code",
-              "password": false,
-              "placeholder": "",
-              "required": true,
-              "show": true,
-              "title_case": false,
-              "type": "code",
-              "value": "import json\nfrom json import JSONDecodeError\n\nimport jq\nfrom json_repair import repair_json\n\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.inputs.inputs import HandleInput, MessageTextInput\nfrom lfx.io import Output\nfrom lfx.log.logger import logger\nfrom lfx.schema.data import Data\nfrom lfx.schema.message import Message\n\n\nclass ParseJSONDataComponent(Component):\n    display_name = \"Parse JSON\"\n    description = \"Convert and extract JSON fields.\"\n    icon = \"braces\"\n    name = \"ParseJSONData\"\n    legacy: bool = True\n    replacement = [\"processing.ParserComponent\"]\n\n    inputs = [\n        HandleInput(\n            name=\"input_value\",\n            display_name=\"Input\",\n            info=\"Data object to filter.\",\n            required=True,\n            input_types=[\"Message\", \"Data\"],\n        ),\n        MessageTextInput(\n            name=\"query\",\n            display_name=\"JQ Query\",\n            info=\"JQ Query to filter the data. The input is always a JSON list.\",\n            required=True,\n        ),\n    ]\n\n    outputs = [\n        Output(display_name=\"Filtered Data\", name=\"filtered_data\", method=\"filter_data\"),\n    ]\n\n    def _parse_data(self, input_value) -> str:\n        if isinstance(input_value, Message) and isinstance(input_value.text, str):\n            return input_value.text\n        if isinstance(input_value, Data):\n            return json.dumps(input_value.data)\n        return str(input_value)\n\n    def filter_data(self) -> list[Data]:\n        to_filter = self.input_value\n        if not to_filter:\n            return []\n        # Check if input is a list\n        if isinstance(to_filter, list):\n            to_filter = [self._parse_data(f) for f in to_filter]\n        else:\n            to_filter = self._parse_data(to_filter)\n\n        # If input is not a list, don't wrap it in a list\n        if not isinstance(to_filter, list):\n            to_filter = repair_json(to_filter)\n            try:\n                to_filter_as_dict = json.loads(to_filter)\n            except JSONDecodeError:\n                try:\n                    to_filter_as_dict = json.loads(repair_json(to_filter))\n                except JSONDecodeError as e:\n                    msg = f\"Invalid JSON: {e}\"\n                    raise ValueError(msg) from e\n        else:\n            to_filter = [repair_json(f) for f in to_filter]\n            to_filter_as_dict = []\n            for f in to_filter:\n                try:\n                    to_filter_as_dict.append(json.loads(f))\n                except JSONDecodeError:\n                    try:\n                        to_filter_as_dict.append(json.loads(repair_json(f)))\n                    except JSONDecodeError as e:\n                        msg = f\"Invalid JSON: {e}\"\n                        raise ValueError(msg) from e\n            to_filter = to_filter_as_dict\n\n        full_filter_str = json.dumps(to_filter_as_dict)\n\n        logger.info(\"to_filter: %s\", to_filter)\n\n        results = jq.compile(self.query).input_text(full_filter_str).all()\n        logger.info(\"results: %s\", results)\n        return [Data(data=value) if isinstance(value, dict) else Data(text=str(value)) for value in results]\n"
-            },
-            "input_value": {
-              "_input_type": "HandleInput",
-              "advanced": false,
-              "display_name": "Input",
-              "dynamic": false,
-              "info": "Data object to filter.",
-              "input_types": [
-                "Message",
-                "Data"
-              ],
-              "list": false,
-              "list_add_label": "Add More",
-              "name": "input_value",
-              "override_skip": false,
-              "placeholder": "",
-              "required": true,
-              "show": true,
-              "title_case": false,
-              "trace_as_metadata": true,
-              "track_in_telemetry": false,
-              "type": "other",
-              "value": ""
-            },
-            "query": {
-              "_input_type": "MessageTextInput",
-              "advanced": false,
-              "display_name": "JQ Query",
-              "dynamic": false,
-              "info": "JQ Query to filter the data. The input is always a JSON list.",
-              "input_types": [
-                "Message"
-              ],
-              "list": false,
-              "list_add_label": "Add More",
-              "load_from_db": false,
-              "name": "query",
-              "override_skip": false,
-              "placeholder": "",
-              "required": true,
-              "show": true,
-              "title_case": false,
-              "tool_mode": false,
-              "trace_as_input": true,
-              "trace_as_metadata": true,
-              "track_in_telemetry": false,
-              "type": "str",
-              "value": ""
             }
           },
           "tool_mode": false
@@ -113624,7 +113452,7 @@
                 },
                 {
                   "name": "google",
-                  "version": "2.30.0"
+                  "version": "1.72.0"
                 }
               ],
               "total_dependencies": 3
@@ -114008,7 +113836,7 @@
                 },
                 {
                   "name": "google",
-                  "version": "2.30.0"
+                  "version": "1.72.0"
                 }
               ],
               "total_dependencies": 3
@@ -118263,9 +118091,9 @@
     ]
   ],
   "metadata": {
-    "num_components": 359,
-    "num_modules": 97
+    "num_components": 358,
+    "num_modules": 98
   },
-  "sha256": "574431890665b24ef69d5aad362ebac45984b8a1b67e06f733e642dd75a37af7",
+  "sha256": "50ba1f0838889b02091d78cf577d1c469861d9e5e44e5875b4f79dcb752d1829",
   "version": "0.3.0"
 }
