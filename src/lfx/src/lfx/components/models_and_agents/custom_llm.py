@@ -118,7 +118,9 @@ class CustomLLMComponent(LCModelComponent):
         except ImportError:
             return None
         if isinstance(e, BadRequestError):
-            message = e.body.get("message")
-            if message:
-                return message
+            if e.body is not None:
+                message = e.body.get("message")
+                if message:
+                    return message
+            return str(e)
         return None
