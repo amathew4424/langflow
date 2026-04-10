@@ -69,6 +69,47 @@ LIVE_MODEL_PROVIDERS: list[str] = ["Ollama", "IBM WatsonX"]
 #   - info: Help text/description shown in the component input
 #
 MODEL_PROVIDER_METADATA: dict[str, Any] = {
+    "Custom OpenAI-Compatible": {
+        "icon": "Bot",
+        "max_tokens_field_name": "max_tokens",
+        "variables": [
+            {
+                "variable_name": "Base URL",
+                "variable_key": "CUSTOM_OPENAI_BASE_URL",
+                "required": True,
+                "is_secret": False,
+                "is_list": False,
+                "options": [],
+                "langchain_param": "base_url",
+                "component_metadata": {
+                    "mapping_field": "custom_openai_base_url",
+                    "required": True,
+                    "advanced": False,
+                    "info": "The base URL of the OpenAI-compatible API server",
+                },
+            },
+            {
+                "variable_name": "API Key",
+                "variable_key": "CUSTOM_OPENAI_API_KEY",
+                "required": False,
+                "is_secret": True,
+                "is_list": False,
+                "options": [],
+                "langchain_param": "api_key",
+                "component_metadata": {
+                    "mapping_field": "api_key",
+                    "required": False,
+                    "advanced": True,
+                    "info": "Falls back to CUSTOM_OPENAI_API_KEY environment variable",
+                },
+            },
+        ],
+        "api_docs_url": "",
+        "mapping": {
+            "model_class": "ChatOpenAI",
+            "model_param": "model",
+        },
+    },
     "OpenAI": {
         "icon": "OpenAI",
         "max_tokens_field_name": "max_tokens",

@@ -13,6 +13,7 @@ import contextlib
 import json
 
 from lfx.base.models.anthropic_constants import ANTHROPIC_MODELS_DETAILED
+from lfx.base.models.custom_openai_constants import CUSTOM_OPENAI_MODELS_DETAILED
 from lfx.base.models.google_generative_ai_constants import (
     GOOGLE_GENERATIVE_AI_EMBEDDING_MODELS_DETAILED,
     GOOGLE_GENERATIVE_AI_MODELS_DETAILED,
@@ -164,6 +165,7 @@ model_provider_metadata = get_model_provider_metadata()
 def get_models_detailed():
     return [
         ANTHROPIC_MODELS_DETAILED,
+        CUSTOM_OPENAI_MODELS_DETAILED,
         OPENAI_MODELS_DETAILED,
         OPENAI_EMBEDDING_MODELS_DETAILED,
         GOOGLE_GENERATIVE_AI_MODELS_DETAILED,
@@ -1331,9 +1333,11 @@ def get_llm(
     watsonx_url=None,
     watsonx_project_id=None,
     ollama_base_url=None,
+    custom_openai_base_url=None,
 ) -> Any:
     # Coerce provider-specific string params (Message/Data may leak through StrInput)
     ollama_base_url = _to_str(ollama_base_url)
+    custom_openai_base_url = _to_str(custom_openai_base_url)
     watsonx_url = _to_str(watsonx_url)
     watsonx_project_id = _to_str(watsonx_project_id)
 
@@ -1366,8 +1370,8 @@ def get_llm(
     # Get API key from user input or global variables
     api_key = get_api_key_for_provider(user_id, provider, api_key)
 
-    # Validate API key (Ollama doesn't require one)
-    if not api_key and provider != "Ollama":
+    # Validate API key (Ollama and Custom OpenAI-Compatible don't require one)
+    if not api_key and provider not in ("Ollama", "Custom OpenAI-Compatible"):
         # Get the correct variable name from the provider variable mapping
         provider_variable_map = get_model_provider_variable_mapping()
         variable_name = provider_variable_map.get(provider, f"{provider.upper().replace(' ', '_')}_API_KEY")
@@ -1467,6 +1471,25 @@ def get_llm(
         )
         if ollama_base_url_value:
             kwargs[base_url_param] = ollama_base_url_value
+    elif provider == "Custom OpenAI-Compatible":
+        # For custom OpenAI-compatible servers, base_url is required
+        base_url_param = metadata.get("base_url_param", "base_url")
+
+        # Get all provider variables from database
+        provider_vars = get_all_variables_for_provider(user_id, provider)
+
+        # Priority: component value > database value > env var
+        custom_base_url_value = (
+            custom_openai_base_url
+            if custom_openai_base_url
+            else provider_vars.get("CUSTOM_OPENAI_BASE_URL") or os.environ.get("CUSTOM_OPENAI_BASE_URL")
+        )
+        if custom_base_url_value:
+            kwargs[base_url_param] = custom_base_url_value
+
+        # If no API key was resolved, use a placeholder (many on-prem servers don't require auth)
+        if not kwargs.get(api_key_param):
+            kwargs[api_key_param] = "no-key"
 
     try:
         return model_class(**kwargs)

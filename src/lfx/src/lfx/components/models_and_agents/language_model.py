@@ -62,6 +62,14 @@ class LanguageModelComponent(LCModelComponent):
             show=False,
             real_time_refresh=True,
         ),
+        StrInput(
+            name="custom_openai_base_url",
+            display_name="Base URL",
+            info="The base URL of the OpenAI-compatible API server (Custom OpenAI-Compatible only)",
+            show=False,
+            required=False,
+            real_time_refresh=True,
+        ),
         MessageInput(
             name="input_value",
             display_name="Input",
@@ -108,6 +116,7 @@ class LanguageModelComponent(LCModelComponent):
             watsonx_url=getattr(self, "base_url_ibm_watsonx", None),
             watsonx_project_id=getattr(self, "project_id", None),
             ollama_base_url=getattr(self, "ollama_base_url", None),
+            custom_openai_base_url=getattr(self, "custom_openai_base_url", None),
         )
 
     def update_build_config(self, build_config: dict, field_value: str, field_name: str | None = None):
@@ -123,7 +132,7 @@ class LanguageModelComponent(LCModelComponent):
         )
 
         # Hide all provider-specific fields by default
-        for field in ["api_key", "base_url_ibm_watsonx", "project_id", "ollama_base_url"]:
+        for field in ["api_key", "base_url_ibm_watsonx", "project_id", "ollama_base_url", "custom_openai_base_url"]:
             if field in build_config:
                 build_config[field]["show"] = False
                 build_config[field]["required"] = False
