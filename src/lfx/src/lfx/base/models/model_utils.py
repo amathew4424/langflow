@@ -362,6 +362,64 @@ def fetch_live_watsonx_models(user_id: UUID | str | None, model_type: str = "llm
         return []
 
 
+def fetch_live_custom_openai_models(user_id: UUID | str | None, model_type: str = "llm") -> list[dict]:
+    """Fetch live models from a custom OpenAI-compatible server via GET /v1/models.
+
+    Args:
+        user_id: The user ID to look up the base URL and API key
+        model_type: "llm" or "embeddings" (only "llm" is supported for now)
+
+    Returns:
+        List of model metadata dicts, or empty list if unable to fetch
+    """
+    if model_type != "llm":
+        return []
+
+    base_url = get_provider_variable_value(user_id, "CUSTOM_OPENAI_BASE_URL")
+    if not base_url:
+        return []
+
+    api_key = get_provider_variable_value(user_id, "CUSTOM_OPENAI_API_KEY")
+
+    # Build the /models endpoint URL from the base URL
+    url = base_url.rstrip("/")
+    # If base_url already ends with /v1, append /models directly
+    # Otherwise, append /v1/models
+    if url.endswith("/v1"):
+        models_url = url + "/models"
+    else:
+        models_url = url + "/v1/models"
+
+    try:
+        headers = {}
+        if api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
+
+        response = requests.get(models_url, headers=headers, timeout=10)
+        if response.status_code != HTTP_STATUS_OK:
+            logger.debug(f"Custom OpenAI-compatible server returned {response.status_code} from {models_url}")
+            return []
+
+        data = response.json()
+        model_list = data.get("data", [])
+        model_names = sorted([m.get("id", "") for m in model_list if m.get("id")])
+
+        return [
+            create_model_metadata(
+                provider="Custom OpenAI-Compatible",
+                name=name,
+                icon="Bot",
+                model_type="llm",
+                tool_calling=True,
+                default=i < MIN_DEFAULT_MODELS,
+            )
+            for i, name in enumerate(model_names)
+        ]
+    except Exception:  # noqa: BLE001
+        logger.debug(f"Could not fetch live Custom OpenAI-compatible models from {models_url}")
+        return []
+
+
 def get_live_models_for_provider(
     user_id: UUID | str | None,
     provider: str,
@@ -371,7 +429,7 @@ def get_live_models_for_provider(
 
     Args:
         user_id: The user ID to look up credentials
-        provider: The provider name (e.g., "Ollama", "IBM WatsonX")
+        provider: The provider name (e.g., "Ollama", "IBM WatsonX", "Custom OpenAI-Compatible")
         model_type: "llm" or "embeddings"
 
     Returns:
@@ -381,6 +439,8 @@ def get_live_models_for_provider(
         return fetch_live_ollama_models(user_id, model_type)
     if provider == "IBM WatsonX":
         return fetch_live_watsonx_models(user_id, model_type)
+    if provider == "Custom OpenAI-Compatible":
+        return fetch_live_custom_openai_models(user_id, model_type)
     return []
 
 
