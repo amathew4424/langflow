@@ -65,14 +65,14 @@ const StoreApiKeyPage = () => {
             className="flex items-center text-lg font-semibold tracking-tight"
             data-testid="settings_menu_header"
           >
-            Langflow Store
+            Agentic Workflow Store
             <ForwardedIconComponent
               name="Store"
               className="ml-2 h-5 w-5 text-primary"
             />
           </h2>
           <p className="text-sm text-muted-foreground">
-            Manage access to the Langflow Store.
+            Manage access to the Agentic Workflow Store.
           </p>
         </div>
       </div>

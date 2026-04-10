@@ -419,7 +419,7 @@ def create_app():
     configure()
     lifespan = get_lifespan(version=__version__)
     app = FastAPI(
-        title="Langflow",
+        title="Agentic Workflow",
         version=__version__,
         lifespan=lifespan,
     )

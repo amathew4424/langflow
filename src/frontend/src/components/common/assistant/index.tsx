@@ -140,7 +140,7 @@ export const AssistantButton: React.FC<AssistantButtonProps> = ({
     <div className="relative flex items-center">
       <button
         onClick={onButtonClick}
-        title="Langflow assistant"
+        title="Agentic Workflow assistant"
         className={getButtonClassName()}
       >
         {isFetching ? (
@@ -153,7 +153,7 @@ export const AssistantButton: React.FC<AssistantButtonProps> = ({
         ) : (
           <img
             src={langflowLogo}
-            alt="Langflow logo"
+            alt="Agentic Workflow logo"
             className={getIconClassName()}
           />
         )}

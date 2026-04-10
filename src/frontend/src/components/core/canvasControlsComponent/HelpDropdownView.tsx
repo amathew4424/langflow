@@ -82,7 +82,7 @@ export const HelpDropdownView = ({
         <DropdownControlButton
           iconName="download"
           testId="canvas_controls_dropdown_get_langflow_desktop"
-          label="Get Langflow Desktop"
+          label="Get Agentic Workflow Desktop"
           externalLink
           onClick={() => openLink(urls.desktop)}
         />
